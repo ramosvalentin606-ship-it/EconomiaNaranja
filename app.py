@@ -2,48 +2,58 @@ import streamlit as st
 import os
 import time
 import glob
-import os
 from gtts import gTTS
 from PIL import Image
 import base64
 
-st.title("Conversión de Texto a Audio")
+st.title("Conversione da Testo ad Audio")
+
 image = Image.open('PAPI_IS_ANGRY.jpg')
 st.image(image, width=350)
-with st.sidebar:
-    st.subheader("Esrcibe y/o selecciona texto para ser escuchado.")
 
+with st.sidebar:
+    st.subheader("Scrivi e/o seleziona un testo per ascoltarlo.")
 
 try:
     os.mkdir("temp")
 except:
     pass
 
-st.subheader("Una pequeña Fábula.")
-st.write('¡Ay! -dijo el ratón-. El mundo se hace cada día más pequeño. Al principio era tan grande que le tenía miedo. '  
-         ' Corría y corría y por cierto que me alegraba ver esos muros, a diestra y siniestra, en la distancia. ' 
-         ' Pero esas paredes se estrechan tan rápido que me encuentro en el último cuarto y ahí en el rincón está '  
-         ' la trampa sobre la cual debo pasar. Todo lo que debes hacer es cambiar de rumbo dijo el gato...y se lo comió. ' 
-         '  '
-         ' Franz Kafka.'
-        
-        )
-           
-st.markdown(f"Quieres escucharlo?, copia el texto")
-text = st.text_area("Ingrese El texto a escuchar.")
+st.subheader("Una piccola Favola Bizzarra.")
 
-tld='com'
+st.write(
+    "«Ah!» disse il topo con tre ombre e nessun corpo. "
+    "«Il mondo si sta restringendo come un cervello dimenticato al sole. "
+    "All’inizio era infinito, pieno di corridoi che respiravano e porte che sussurravano il mio nome. "
+    "Correvo tra pareti di carne e orologi fusi che ticchettavano al contrario. "
+    "Ora i muri si stringono come mascelle affamate e il pavimento pulsa sotto le mie zampe.» "
+    "Nel fondo della stanza c’era una trappola fatta di specchi. "
+    "«Devi solo cambiare direzione» disse il gatto, "
+    "un gatto con occhi umani e sorriso cucito. "
+    "Il topo cambiò direzione. "
+    "La stanza cambiò topo. "
+    "E il gatto divorò ciò che rimaneva del silenzio."
+)
+
+st.markdown("Vuoi ascoltarla? Copia il testo qui sotto.")
+
+text = st.text_area("Inserisci il testo da ascoltare.")
+
+tld = 'com'
+
 option_lang = st.selectbox(
-    "Selecciona el lenguaje",
-    ("Español", "English"))
-if option_lang=="Español" :
-    lg='es'
-if option_lang=="English" :
-    lg='en'
+    "Seleziona la lingua",
+    ("Italiano", "English")
+)
 
-def text_to_speech(text, tld,lg):
-    
-    tts = gTTS(text,lang=lg) # tts = gTTS(text,'en', tld, slow=False)
+if option_lang == "Italiano":
+    lg = 'it'
+elif option_lang == "English":
+    lg = 'en'
+
+
+def text_to_speech(text, tld, lg):
+    tts = gTTS(text, lang=lg)
     try:
         my_file_name = text[0:20]
     except:
@@ -52,34 +62,24 @@ def text_to_speech(text, tld,lg):
     return my_file_name, text
 
 
-#display_output_text = st.checkbox("Verifica el texto")
+if st.button("Converti in Audio"):
+    result, output_text = text_to_speech(text, 'com', lg)
+    audio_file = open(f"temp/{result}.mp3", "rb")
+    audio_bytes = audio_file.read()
 
-if st.button("convertir a Audio"):
-     result, output_text = text_to_speech(text, 'com',lg)#'tld
-     audio_file = open(f"temp/{result}.mp3", "rb")
-     audio_bytes = audio_file.read()
-     st.markdown(f"## Tú audio:")
-     st.audio(audio_bytes, format="audio/mp3", start_time=0)
+    st.markdown("## Il tuo audio:")
+    st.audio(audio_bytes, format="audio/mp3", start_time=0)
 
-     #if display_output_text:
-     
-     #st.write(f" {output_text}")
-    
-#if st.button("ElevenLAabs",key=2):
-#     from elevenlabs import play
-#     from elevenlabs.client import ElevenLabs
-#     client = ElevenLabs(api_key="a71bb432d643bbf80986c0cf0970d91a", # Defaults to ELEVEN_API_KEY)
-#     audio = client.generate(text=f" {output_text}",voice="Rachel",model="eleven_multilingual_v1")
-#     audio_file = open(f"temp/{audio}.mp3", "rb")
+    with open(f"temp/{result}.mp3", "rb") as f:
+        data = f.read()
 
-     with open(f"temp/{result}.mp3", "rb") as f:
-         data = f.read()
-
-     def get_binary_file_downloader_html(bin_file, file_label='File'):
+    def get_binary_file_downloader_html(bin_file, file_label='File'):
         bin_str = base64.b64encode(data).decode()
-        href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">Download {file_label}</a>'
+        href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">Scarica {file_label}</a>'
         return href
-     st.markdown(get_binary_file_downloader_html("audio.mp3", file_label="Audio File"), unsafe_allow_html=True)
+
+    st.markdown(get_binary_file_downloader_html("audio.mp3", file_label="File Audio"), unsafe_allow_html=True)
+
 
 def remove_files(n):
     mp3_files = glob.glob("temp/*mp3")
